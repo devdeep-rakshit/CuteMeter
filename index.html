@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#fff0f5">
     <title>CuteMeter 🎀</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -13,34 +14,57 @@
             <h1>CuteMeter 🎀</h1>
             <p class="tagline">A tiny test of your legendary cuteness.</p>
         </header>
-        
+
         <main id="main-content">
             <div class="camera-wrapper">
-                <video id="camera-feed" autoplay playsinline></video>
-                <div id="countdown-overlay" class="hidden">
-                    <svg class="progress-ring" width="120" height="120">
+                <video id="camera-feed" autoplay playsinline muted></video>
+                <div id="countdown-overlay" class="hidden" aria-live="polite">
+                    <svg class="progress-ring" width="120" height="120" aria-hidden="true">
                         <circle class="progress-ring__circle" stroke="white" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
                     </svg>
                     <span id="countdown-text">10</span>
                 </div>
                 <div id="result-overlay" class="hidden">
                     <div class="score-card">
-                        <h2 id="cuteness-score">Score: 98/100 💗</h2>
-                        <p id="compliment-text">You are too cute!</p>
-                        <button id="retry-btn">Measure Again 💖</button>
+                        <h2 id="cuteness-score">Your score is loading 💗</h2>
+                        <p id="compliment-text">Ready for your result?</p>
+                        <button id="retry-btn" type="button">Measure Again 💖</button>
                     </div>
                 </div>
             </div>
-            
-            <div id="instructions" class="instructions">
+
+            <div id="instructions" class="instructions" aria-live="polite">
                 <p>Loading camera... ✨</p>
             </div>
+
+            <div class="photo-actions">
+                <button id="capture-btn" type="button" disabled>Take Photo 📸</button>
+                <button id="download-btn" class="secondary-button" type="button" disabled>Download Photo ⬇️</button>
+            </div>
+
+            <section id="photo-panel" class="photo-panel hidden" aria-labelledby="photo-heading">
+                <h2 id="photo-heading">Your photo preview</h2>
+                <img id="photo-preview" alt="Preview of the photo you chose to capture">
+                <p class="photo-explainer">This photo stays in your browser unless you choose to send it. Nothing is captured automatically.</p>
+
+                <label class="consent-row" for="telegram-consent">
+                    <input id="telegram-consent" type="checkbox">
+                    <span>I have reviewed this photo and consent to send this photo to my configured Telegram chat.</span>
+                </label>
+
+                <label for="send-key">Private send key</label>
+                <input id="send-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter your Vercel TELEGRAM_SEND_KEY">
+
+                <button id="send-telegram-btn" type="button" disabled>Send Photo to Telegram ✉️</button>
+                <p id="telegram-status" class="status-message" role="status" aria-live="polite">Capture a photo first. Telegram sending requires the secure backend described in the README.</p>
+            </section>
         </main>
-        
+
         <footer>
-            <p class="privacy-note">Privacy Note: The camera feed is processed entirely on your device. No photos are saved, uploaded, or transmitted.</p>
+            <p class="privacy-note">Privacy: the camera feed stays on your device. CuteMeter never captures or sends photos in the background. A photo is sent only after you capture it, check the consent box, and press Send to Telegram. The bot token is kept on the server, not in browser JavaScript.</p>
         </footer>
     </div>
+
     <script src="js/compliments.js"></script>
     <script src="js/score-generator.js"></script>
     <script src="js/countdown.js"></script>
