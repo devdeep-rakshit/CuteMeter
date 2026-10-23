@@ -1,4 +1,4 @@
-const { timingSafeEqual } = require("node:crypto");
+import { timingSafeEqual } from "node:crypto";
 
 const MAX_BASE64_LENGTH = 3500000;
 const MAX_PHOTO_BYTES = 2600000;
@@ -15,7 +15,7 @@ function matchesSecret(received, expected) {
     return timingSafeEqual(receivedBuffer, expectedBuffer);
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
     res.setHeader("Cache-Control", "no-store");
 
     if (req.method !== "POST") {
