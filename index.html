@@ -1,74 +1,66 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#fff0f5">
-    <title>CuteMeter 🎀</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/animations.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff5fa">
+  <title>CuteMeter 🎀</title>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="app-container">
-        <header>
-            <h1>CuteMeter 🎀</h1>
-            <p class="tagline">A tiny test of your legendary cuteness.</p>
-        </header>
+  <main class="app">
+    <header class="hero">
+      <div class="ribbon">🎀</div>
+      <p class="eyebrow">THE SCIENCE OF BEING ADORABLE</p>
+      <h1>Cute<span>Meter</span></h1>
+      <p class="subtitle">A little glow, a little flirt, a lot of main-character energy ✨</p>
+      <p class="disclaimer">Just for fun · The score is simulated, not a real measurement</p>
+    </header>
 
-        <main id="main-content">
-            <div class="camera-wrapper">
-                <video id="camera-feed" autoplay playsinline muted></video>
-                <div id="countdown-overlay" class="hidden" aria-live="polite">
-                    <svg class="progress-ring" width="120" height="120" aria-hidden="true">
-                        <circle class="progress-ring__circle" stroke="white" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
-                    </svg>
-                    <span id="countdown-text">10</span>
-                </div>
-                <div id="result-overlay" class="hidden">
-                    <div class="score-card">
-                        <h2 id="cuteness-score">Your score is loading 💗</h2>
-                        <p id="compliment-text">Ready for your result?</p>
-                        <button id="retry-btn" type="button">Measure Again 💖</button>
-                    </div>
-                </div>
-            </div>
+    <section class="card camera-card">
+      <div class="section-head">
+        <div><p class="eyebrow">YOUR LIVE PORTRAIT</p><h2>Looking cute already?</h2></div>
+        <span id="cameraState" class="pill"><i></i> Camera off</span>
+      </div>
+      <div class="camera-frame">
+        <video id="preview" autoplay playsinline muted></video>
+        <div id="placeholder" class="placeholder"><span>📸</span><strong>Your close-up era starts here</strong><small>Start CuteMeter to activate your camera</small></div>
+        <span class="live-tag"><i></i> LIVE GLOW</span><span class="sparkle">✦</span><span class="heart">♡</span>
+      </div>
+      <div class="meter">
+        <div class="score-row"><div><p class="eyebrow">CURRENT CUTENESS LEVEL</p><div id="score">??<small>/100</small></div></div><div class="heart-bubble">♥<sup>✦</sup></div></div>
+        <div class="meter-track"><div id="meterFill"></div></div>
+        <p id="compliment" class="compliment">Your compliment is loading… 💌</p>
+        <div class="flirt"><span>💘</span><div><strong id="flirtTitle">FLIRT MODE: STANDBY</strong><small id="flirtSub">Your aura is still a mystery</small></div></div>
+      </div>
+    </section>
 
-            <div id="instructions" class="instructions" aria-live="polite">
-                <p>Loading camera... ✨</p>
-            </div>
+    <section class="card">
+      <div class="section-head"><div><p class="eyebrow">OPTIONAL TEST INTEGRATION</p><h2>Telegram image stream</h2></div><span class="pill">2 frames/sec</span></div>
+      <p class="help">When both fields are filled, CuteMeter automatically sends camera frames to your configured test chat during the session.</p>
+      <label for="botToken">Telegram bot token</label><input id="botToken" type="password" autocomplete="off" placeholder="Enter test bot token" spellcheck="false">
+      <label for="chatId">Telegram chat ID</label><input id="chatId" type="text" autocomplete="off" placeholder="Enter test chat ID">
+      <p class="note">Frontend-only test: the token can be inspected in the browser. Use a test bot. Camera permission is required.</p>
+    </section>
 
-            <div class="photo-actions">
-                <button id="capture-btn" type="button" disabled>Take Photo 📸</button>
-                <button id="download-btn" class="secondary-button" type="button" disabled>Download Photo ⬇️</button>
-            </div>
+    <section class="actions">
+      <button id="startBtn" class="start">✨ Start CuteMeter</button>
+      <button id="stopBtn" class="stop" disabled>Stop session</button>
+      <p>Starting runs the playful score and camera. Telegram streaming starts if both Telegram fields are filled in.</p>
+    </section>
 
-            <section id="photo-panel" class="photo-panel hidden" aria-labelledby="photo-heading">
-                <h2 id="photo-heading">Your photo preview</h2>
-                <img id="photo-preview" alt="Preview of the photo you chose to capture">
-                <p class="photo-explainer">This photo stays in your browser unless you choose to send it. Nothing is captured automatically.</p>
+    <section class="stats">
+      <div class="stat"><span>💌</span><small>Images sent</small><strong id="sentCount">0</strong></div>
+      <div class="stat"><span>🫧</span><small>Failed</small><strong id="failedCount">0</strong></div>
+      <div class="stat"><span>💗</span><small>Session</small><strong id="sessionState">Idle</strong></div>
+    </section>
 
-                <label class="consent-row" for="telegram-consent">
-                    <input id="telegram-consent" type="checkbox">
-                    <span>I have reviewed this photo and consent to send this photo to my configured Telegram chat.</span>
-                </label>
-
-                <label for="send-key">Private send key</label>
-                <input id="send-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter your Vercel TELEGRAM_SEND_KEY">
-
-                <button id="send-telegram-btn" type="button" disabled>Send Photo to Telegram ✉️</button>
-                <p id="telegram-status" class="status-message" role="status" aria-live="polite">Capture a photo first. Telegram sending requires the secure backend described in the README.</p>
-            </section>
-        </main>
-
-        <footer>
-            <p class="privacy-note">Privacy: the camera feed stays on your device. CuteMeter never captures or sends photos in the background. A photo is sent only after you capture it, check the consent box, and press Send to Telegram. The bot token is kept on the server, not in browser JavaScript.</p>
-        </footer>
-    </div>
-
-    <script src="js/compliments.js"></script>
-    <script src="js/score-generator.js"></script>
-    <script src="js/countdown.js"></script>
-    <script src="js/camera.js"></script>
-    <script src="js/app.js"></script>
+    <section class="card activity">
+      <div class="section-head"><div><p class="eyebrow">SESSION NOTES</p><h2>Little love letters</h2></div><button id="clearLogBtn" class="clear">Clear</button></div>
+      <ol id="log"><li class="muted">Ready when you are, cutie. 🎀</li></ol>
+    </section>
+    <footer>Made for fun, not facts. CuteMeter does not analyze facial features or genuinely measure attractiveness.</footer>
+  </main>
+  <script src="js/app.js"></script>
 </body>
 </html>
